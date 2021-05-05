@@ -1,0 +1,1 @@
+This module enables easy training of object detection models from the TensorFlow API
