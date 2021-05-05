@@ -17,7 +17,7 @@ def clear_dir(path):
 
 
 
-def data_split(train,test,GT,objs,train_split=):
+def data_split(train,test,GT,objs,train_split):
     
     clear_dir("./data/" + train)
     clear_dir("./data/" + test)
