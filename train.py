@@ -200,9 +200,9 @@ def export_inference_graph(checkpoint_num, output, move=False):
                             filename, "./" + MODEL + output + "/" + name+ext)
 
 
-def move_checkpoints():
+def move_checkpoints(temp_dir):
 
-    path_dir = "C:/Users/tanzimmashrur/Desktop/checkpoints"
+    path_dir = temp_dir
 
     for filename in os.listdir(path_dir):
         name, ext = os.path.splitext(filename)
@@ -342,7 +342,7 @@ def main(unused_argv):
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
 
         #moving checkpoints to the proper directory, it will delete from the temp_dir directory
-        move_checkpoints()  
+        move_checkpoints(TEMP_DIR)  
 
         #calculating map for all checkpoints and output map value on text file located inside the model directory
         calculate_map(GRAPH)

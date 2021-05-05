@@ -14,19 +14,9 @@ import xml.etree.ElementTree as ET
 
 
 lm =    "/labelmap.pbtxt"
-#graph = "/inference_best/frozen_inference_graph.pb"
-#graph = "/test/frozen_inference_graph.pb"
-
-
-
-
-
-#images = "C:/Users/tanzimmashrur/OneDrive - University of Guelph/Masters OneDrive/Code/Robot Feeder 2.0/Object detection/data/test/images/"
 
 NUM_CLASSES = 3
 
-
-#https://github.com/Cartucho/mAP
 
 class_dict = {
     1: "fork",
