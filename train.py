@@ -94,7 +94,7 @@ def calculate_map(graph, single=False, delete_inf=True, cp=-1, iou=0.5):
             export_inference_graph(checkpoint_num, INF_OUTPUT)
             clear_dir(path="./" + MODEL + "/detection results")
             create_GT(MODEL, IMG_PATH, TEST, graph)
-            mAP = find_map(MODEL, checkpoint_num, OUTPUT, GT, iou)
+            mAP = find_map(MODEL, checkpoint_num, "output", GT, iou)
             all_mAP.write(str(mAP))
             all_mAP.write("\n")
 
@@ -110,7 +110,6 @@ def calculate_map(graph, single=False, delete_inf=True, cp=-1, iou=0.5):
 
         print(max_checkpoints)
 
-        start = time()
 
         export_inference_graph(max_checkpoints, INF_OUTPUT)
         clear_dir(path="./" + MODEL + "/detection results")
@@ -124,7 +123,6 @@ def calculate_map(graph, single=False, delete_inf=True, cp=-1, iou=0.5):
 
         return mAP
 
-        print(time() - start)
 
 
 def clear_dir(path, keep_dir=False):
@@ -239,27 +237,24 @@ def find_best_map():
     best_map = max(lines)
     best_cp = str(lines.index(best_map)*SAVE_CHECKPOINTS)
 
-    if os.path.isdir("./" + MODEL + INF_BEST):
-        clear_dir(path="./" + MODEL + INF_BEST)
+    if os.path.isdir("./" + MODEL + INF_OUTPUT):
+        clear_dir(path="./" + MODEL + INF_OUTPUT)
 
-    export_inference_graph(best_cp, INF_BEST, move=True)
+    export_inference_graph(best_cp, INF_OUTPUT, move=True)
 
     return best_map*100, best_cp
 
 
-def get_coco_map(cp, yolo=False):
+def get_coco_map(cp):
 
-    file = open(MODEL + "/TEMP2.txt", "w+")
+    file = open(MODEL + "/coco_map.txt", "w+")
 
     map_50_95 = 0
     map_50 = 0
     map_75 = 0
     mAP = 0
-
-    if yolo == False:
-        output = "/best_inference"
-        graph = output + "/frozen_inference_graph.pb"
-        export_inference_graph(cp, output)
+    
+    graph = INF_OUTPUT +"/frozen_inference_graph.pb"
 
     clear_dir(path="./" + MODEL + "/detection results")
     create_GT(MODEL, IMG_PATH, TEST, graph)
@@ -296,18 +291,19 @@ def get_coco_map(cp, yolo=False):
 
 def main(unused_argv):
 
-    clear_dir("C:/Users/tanzimmashrur/Desktop/checkpoints", True)
-    config = tf.estimator.RunConfig(model_dir="C:/Users/tanzimmashrur/Desktop/checkpoints",
+    #while saving checkpoints tensorflow has a weird error on windows
+    #so temporarily save checkpoints somewhere on desktop, this program will later move the checkpoints onto the proper directory
+    TEMP_DIR = ""
+
+    clear_dir(TEMP_DIR, True)
+    config = tf.estimator.RunConfig(model_dir=TEMP_DIR,
                                     save_checkpoints_steps=SAVE_CHECKPOINTS, keep_checkpoint_max=None)
 
     train_and_eval_dict = model_lib.create_estimator_and_inputs(
         run_config=config,
         hparams=model_hparams.create_hparams(FLAGS.hparams_overrides),
         pipeline_config_path=MODEL+CONFIG)
-    # train_steps=FLAGS.num_train_steps,
-    # sample_1_of_n_eval_examples=FLAGS.sample_1_of_n_eval_examples,
-    # sample_1_of_n_eval_on_train_examples=(
-    #    FLAGS.sample_1_of_n_eval_on_train_examples))
+   
 
     estimator = train_and_eval_dict['estimator']
     train_input_fn = train_and_eval_dict['train_input_fn']
@@ -345,49 +341,65 @@ def main(unused_argv):
 
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])
 
-        print("MOVING CHECKPOINTS!!!!!")
+        #moving checkpoints to the proper directory, it will delete from the temp_dir directory
+        move_checkpoints()  
 
-        move_checkpoints()  # CHECKPOINT FOLDER NEEDS TO EXIST
-
-        print("EXPORTING INFERENCE GRAPH!!!!!!!!!!!!!")
-
+        #calculating map for all checkpoints and output map value on text file located inside the model directory
         calculate_map(GRAPH)
 
+        #it will go through the text file to determine which checkpoint had the best map value
         best_map, best_cp = find_best_map()
 
+        #it will calcualte the coco map values for the best checkpoint and output that into a text file inside model directory 
         get_coco_map(best_cp)
 
         print("\n")
         print("Best map: " + str(best_map))
         print("Checkpoint : " + best_cp)
 
-        print("\n")
-        print("TIMES: ")
+
 
 
 if __name__ == '__main__':
 
-    VAL = "val"
-
+    #will create a inference graph directory inside model directory 
     INF_OUTPUT = "/inference_graph"
-    INF_BEST = "/inference_best"
 
-    OUTPUT = "output"
+    #text file containing the map value of all checkpoints
     TXT = "/map_complete.txt"
 
-    TRAIN_STEPS = 40000
-
-    SAVE_CHECKPOINTS = 1000
-
-    GT = "test GT"
+    #put all your image files in the data/images folder 
     IMG_PATH = "images"
+
+    #put all your respective annotations in these folders 
+    GT = "test GT" 
     TEST = "test"
     TRAIN = "train"
+    VAL = "val"
+
+    #line 106: put path of fine tuned checkpoint
+    #line 130: put path of train TF record 
+    #line 132 and 146: put path of label map
+    #line 142: put path of val TF record
+    #download pre trained models from:
+    #https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md
+    CONFIG = "/init/faster_rcnn_inception_v2_petso.config"
+
+    OBJS = ["images_seperated/class1","images_seperated/class2","images_seperated/class3"] #in the data folder seperate your images data into its different classes and place them in different folders
+    TRAIN_SPLIT = 0.7 #70 train 30 test 
+
+    TRAIN_STEPS = 40000 #total steps
+    SAVE_CHECKPOINTS = 1000 #save every N checkpoints
+    CHECKPOINT_DIR = "checkpoint"
 
     GRAPH = INF_OUTPUT + "/frozen_inference_graph.pb"
 
-    MODEL = "Faster RCNN"
+    MODEL = "Faster RCNN" #can change to a different model, just find the proper config and pre trained model from official TensorFlow Obect Detection API 
 
+    #will automatically split your data and generate the ground truth test file to calculate mAP after training 
     data_split(TRAIN, TEST, GT, OBJS, TRAIN_SPLIT)
+    #creates the TF records required for training 
     create_tf_records_from_csv(TRAIN, VAL, MODEL, IMG_PATH)
-    tf.app.run()  # CHANGE PRE TRAINED MODEL
+    #trains the models and calculats MAP for all checkpoints
+    #it will find the checkpoint with the highest mAP and then calculate the coco map values for it 
+    tf.app.run() 

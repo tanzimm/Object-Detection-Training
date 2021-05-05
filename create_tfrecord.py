@@ -142,7 +142,7 @@ def create_tf_example_weights(group, path):
 def create_tf_records_from_csv(train,val,model,images):
 
 
-    path = "C:/Users/tanzimmashrur/OneDrive - University of Guelph/Masters OneDrive/Object detection" #if object detection folder moves this needs to updated
+    path = "" #SPECIFY repository location 
     save = path + "/" + model + "/init/"
 
 
@@ -156,8 +156,6 @@ def create_tf_records_from_csv(train,val,model,images):
         if count == 0 :
             xml_df.to_csv((save + "train" + '_labels.csv'), index=None)
             print('SUCCESSFULLY converted xml to csv.')
-            #distribution_weight(save + "train" + '_labels.csv',1,1000)
-            #adjust_weight(save + "train" + '_labels.csv',image_label,1000)
             image_path = "./data/" + images
             writer = tf.python_io.TFRecordWriter(save + "train.record")
 
@@ -165,8 +163,6 @@ def create_tf_records_from_csv(train,val,model,images):
         elif count== 1:
             xml_df.to_csv((save + "val" + '_labels.csv'), index=None)
             print('SUCCESSFULLY converted xml to csv.')
-            #distribution_weight(save + "val" + '_labels.csv',1,1000)
-            #adjust_weight(save + "val" + '_labels.csv',image_label,1000)
             image_path = "./data/" + images
             writer = tf.python_io.TFRecordWriter(save + "val.record")
         
@@ -224,71 +220,6 @@ def update_csv(frame_name,file,weight):
                 writer.writerow(row)
 
     shutil.move(tempfile.name, file)
-
-
-
-
-# file = "./PT2/init/train_labels.csv"
-# weight = 1000
-# src = "./data/daily train/train/"
-
-
-# adjust_weight(file,src,weight)
-
-            # i = 0
-            # with open(file) as fp:
-            #     lines = fp.readlines()
-
-            # with open(file, 'w') as f:
-               
-            #     for line in lines:
-            #         if (i > 0):
-            #             line = line.rstrip()
-
-            #             if (line.startswith(frame_name)):
-            #                 weight = weight2
-
-            #                 # separate the string by commas and update the last element
-            #                 wline = line.split(",")
-            #                 wline[len(wline) - 1] = str(weight)
-
-            #                 # join the string back together with the updated value 
-            #                 line = ','.join(wline)
-            #                 line += "\n"
-
-            #                 f.write(line)
-            #                 break
-            #         i += 1
-
-
-
-# model = "PT2"
-# path = "C:/Users/tanzimmashrur/OneDrive - University of Guelph/Masters OneDrive/Object detection" #if object detection folder moves this needs to updated
-# save = path + "/" + model + "/init/"
-# distribution_weight(save + "train" + '_labels.csv',1,1000)
-
-# src = "./data/daily train/temp/"
-
-# counter = 2
-
-# for filename in os.listdir(src):
-#     if filename.endswith(".xml") or filename.endswith(".XML"):
-
-        # os.rename(src+filename,src+"d2-"+str(counter)+".xml")
-        # counter += 1
-        # name, _ = os.path.splitext(filename)
-
-        # if name[:2] == "d1":
-        #     print(name)
-
-
-
-# image_label = os.path.join(path,'data',"daily train","temp")
-# xml_df = xml_to_csv(image_label)
-
-# xml_df.to_csv((save + "train" + '_labels.csv'), index=None)
-# print('SUCCESSFULLY converted xml to csv.')
-# distribution_weight(save + "train" + '_labels.csv',1,1000)
 
 
 

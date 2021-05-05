@@ -4,16 +4,6 @@ from data.convert_gt_xml import get_xml_gt
 
 
 
-# objs = ["additional labels"]
-
-# train = "additional train"
-    
-# test = "additional test"
-
-# GT = "additional test GT"
-
-# train_split = 0.7
-
 
 def clear_dir(path):
   for filename in os.listdir(path):
@@ -27,7 +17,7 @@ def clear_dir(path):
 
 
 
-def data_split(train,test,GT,objs,train_split):
+def data_split(train,test,GT,objs,train_split=):
     
     clear_dir("./data/" + train)
     clear_dir("./data/" + test)
@@ -69,10 +59,3 @@ def data_split(train,test,GT,objs,train_split):
 
 
 
-# train = "daily train/"
-# test = "daily test"
-# GT = "daily test GT"
-# OBJS = ["additional labels seperated/fork","additional labels seperated/spoon","additional labels seperated/grab"]
-
-
-# data_split(train,test,GT,OBJS,0.7)
